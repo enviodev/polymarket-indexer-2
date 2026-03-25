@@ -16,6 +16,9 @@ This indexer tracks on-chain events from Polymarket contracts on Polygon:
 - `TransactionRelayed` (RelayHub) - relayed transactions
 - `GameCreated`, `GameSettled`, `GameEmergencySettled`, `GameCanceled`, `GamePaused`, `GameUnpaused` (UMA Sports Oracle) - sports market lifecycle
 - `MarketCreated`, `MarketPaused`, `MarketUnpaused` (UMA Sports Oracle) - market management
+- `OrderFilled` (Exchange) - order fills
+- `ConditionPreparation`, `PositionSplit`, `PositionsMerge`, `PayoutRedemption` (ConditionalTokens) - prediction market mechanics
+- `FPMMCreated`, `FPMMBuy`, `FPMMSell` (FixedProductMarketMaker) - AMM activity
 
 **Chain:** Polygon (chain ID 137)
 
@@ -42,6 +45,17 @@ The GraphQL Playground is available at [http://localhost:8080](http://localhost:
 ```bash
 pnpm codegen
 ```
+
+## Subgraph Migration Status
+
+- [x] Wallet Subgraph
+- [x] Sports Oracle Subgraph
+- [x] Order Book Subgraph
+- [x] OI Subgraph
+- [x] FPMM Subgraph
+- [x] Activity Subgraph
+- [x] Fee Module Subgraph
+- [x] PNL Subgraph
 
 ## Built With
 
