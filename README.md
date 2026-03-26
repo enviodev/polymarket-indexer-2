@@ -1,32 +1,55 @@
-## Polymarket Indexer
+# Polymarket Indexer
 
-_Please check the [documentation website](https://docs.envio.dev) for a complete guide on all [Envio](https://envio.dev) indexer features._
+[![Discord](https://img.shields.io/badge/Discord-Join%20Chat-7289da?logo=discord&logoColor=white)](https://discord.com/invite/envio)
 
-**This indexer is still a work in progress. Do not use it in production. It is meant only as a reference.**
+An indexer for Polymarket on-chain events, built with [Envio HyperIndex](https://docs.envio.dev/docs/HyperIndex/overview). Created as a reference migration from the [Polymarket Subgraph](https://github.com/Polymarket/polymarket-subgraph).
 
-This indexer is built to index events emitted from contracts related to Polymarket. It is created by taking reference from the [Polymarket Subgraph repo](https://github.com/Polymarket/polymarket-subgraph).
+> **Note:** This indexer is a work-in-progress and is meant as a reference implementation only. Do not use in production without thorough testing.
 
-### Run
+## What's Indexed
+
+The GraphQL API exposes Polymarket wallet activity, order fills, market lifecycle events, liquidity provision, and prediction market mechanics on Polygon. You can use this as a foundation for building Polymarket analytics tools, trade trackers, and market dashboards.
+
+## Events Indexed
+
+- `Transfer` (USDC) - USDC transfers between wallets
+- `ProxyCreation` (SafeProxyFactory) - new Polymarket wallet creation
+- `TransactionRelayed` (RelayHub) - relayed transactions
+- `GameCreated`, `GameSettled`, `GameEmergencySettled`, `GameCanceled`, `GamePaused`, `GameUnpaused` (UMA Sports Oracle) - sports market lifecycle
+- `MarketCreated`, `MarketPaused`, `MarketUnpaused` (UMA Sports Oracle) - market management
+- `OrderFilled` (Exchange) - order fills
+- `ConditionPreparation`, `PositionSplit`, `PositionsMerge`, `PayoutRedemption` (ConditionalTokens) - prediction market mechanics
+- `FPMMCreated`, `FPMMBuy`, `FPMMSell` (FixedProductMarketMaker) - AMM activity
+
+## Chain
+
+Polygon (chain ID 137)
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/en/download/current) v22 or newer
+- [pnpm](https://pnpm.io/installation) v8 or newer
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+## Quick Start
 
 ```bash
+# Install dependencies
+pnpm install
+
+# Run locally (starts indexer + GraphQL API at http://localhost:8080)
 pnpm dev
 ```
 
-Open [http://localhost:8080](http://localhost:8080) to access the GraphQL Playground. The local password is `testing`.
+The GraphQL Playground is available at [http://localhost:8080](http://localhost:8080). Local password: `testing`.
 
-### Generate files from `config.yaml` or `schema.graphql`
+## Regenerate Files
 
 ```bash
 pnpm codegen
 ```
 
-### Pre-requisites
-
-- [Node.js (v18 or newer)](https://nodejs.org/en/download/current)
-- [pnpm (v8 or newer)](https://pnpm.io/installation)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-
-## Subgraphs Migration Status
+## Subgraph Migration Status
 
 - [x] Wallet Subgraph
 - [x] Sports Oracle Subgraph
@@ -37,32 +60,24 @@ pnpm codegen
 - [x] Fee Module Subgraph
 - [x] PNL Subgraph
 
-## Tasks
+## Built With
 
-- [x] Migrate all subgraphs
-- [ ] Validate data against the Polymarket indexer (work in progress)
+- [Envio HyperIndex](https://docs.envio.dev/docs/HyperIndex/overview) - multichain indexing framework
+- [HyperSync](https://docs.envio.dev/docs/HyperSync/overview) - high-performance blockchain data retrieval
+- Based on the [Polymarket Subgraph](https://github.com/Polymarket/polymarket-subgraph)
 
-### Smaller Tasks
+## Related
 
-- [x] Effects for fetching details about Collateral Token
-- [x] Remove hardcoded return value from `getCollateralScale` in FPMM handler
-- [ ] Debug `TradeType` import in `updatedFields.ts`
-- [x] `getPositionId` implementation (file: `ConditionalTokens.ts`)
-- [ ] understand the use of GlobalUSDCBalance entity used in polymarket subgraph (`USDC.ts`)
-- [ ] Write tests for utility functions like `getPositionId` or `computeProxyWalletAddress`
-- [ ] Make sure all error message are descriptive
-- [ ] In PNL subgraph, `ConditionalTokens.ConditionPreparation` handler look if you can make a relation between `Condition` & `Position` entity. Note: this might be tricky because `Condition.positionIds` is `bigint[]` & ids in `Position` entity is in `string`.
+- [Track Polymarket Trades with HyperSync](https://github.com/enviodev/track-poly-trades) - lightweight HyperSync script for Polymarket trade data
+- [Polymarket Whale Tracker](https://github.com/enviodev/poly-whale-tracker) - track large Polymarket positions with HyperSync
+- [Track Polymarket Trades blog post](https://docs.envio.dev/blog/track-polymarket-trades-hypersync) - step-by-step guide to building a Polymarket trade tracker with HyperSync
 
-## Notes
+## Documentation
 
-This indexer is a work in progress, and some parts of the logic are still being migrated. Data validation has been done for a few subgraphs so far, and we’ll be expanding correctness checks after the main migration is finished.
+- [HyperIndex Docs](https://docs.envio.dev/docs/HyperIndex/overview)
+- [Getting Started with HyperIndex](https://docs.envio.dev/docs/HyperIndex/getting-started)
 
-- The `polymarket-subgraph` repo tracks `ConditionalTokens` event multiple times which different event handlers but in our case we have merged all those event handlers into one.
+## Support
 
-- `activity-subgraph/src/FixedProductMarketMakerFactoryMapping.ts` file is not necessary it is copy that is used in the actiivty subgraph so other event handlers can access the FPMM addresses. We are combining all into a single indexer, we already have that handler.
-
-## Feature Requests
-
-Not all are required but just a list that we can talk about:
-
-- having `bytes32` values as `0x{string}` instead of just string
+- [Discord community](https://discord.com/invite/envio)
+- [Envio Docs](https://docs.envio.dev)
