@@ -6,11 +6,12 @@ An indexer for Polymarket on-chain events, built with [Envio HyperIndex](https:/
 
 > **Note:** This indexer is a work-in-progress and is meant as a reference implementation only. Do not use in production without thorough testing.
 
-## What This Indexes
+## What's Indexed
 
-This indexer tracks on-chain events from Polymarket contracts on Polygon:
+The GraphQL API exposes Polymarket wallet activity, order fills, market lifecycle events, liquidity provision, and prediction market mechanics on Polygon. You can use this as a foundation for building Polymarket analytics tools, trade trackers, and market dashboards.
 
-**Events indexed:**
+## Events Indexed
+
 - `Transfer` (USDC) - USDC transfers between wallets
 - `ProxyCreation` (SafeProxyFactory) - new Polymarket wallet creation
 - `TransactionRelayed` (RelayHub) - relayed transactions
@@ -20,7 +21,9 @@ This indexer tracks on-chain events from Polymarket contracts on Polygon:
 - `ConditionPreparation`, `PositionSplit`, `PositionsMerge`, `PayoutRedemption` (ConditionalTokens) - prediction market mechanics
 - `FPMMCreated`, `FPMMBuy`, `FPMMSell` (FixedProductMarketMaker) - AMM activity
 
-**Chain:** Polygon (chain ID 137)
+## Chain
+
+Polygon (chain ID 137)
 
 ## Prerequisites
 
@@ -67,6 +70,7 @@ pnpm codegen
 
 - [Track Polymarket Trades with HyperSync](https://github.com/enviodev/track-poly-trades) - lightweight HyperSync script for Polymarket trade data
 - [Polymarket Whale Tracker](https://github.com/enviodev/poly-whale-tracker) - track large Polymarket positions with HyperSync
+- [Track Polymarket Trades blog post](https://docs.envio.dev/blog/track-polymarket-trades-hypersync) - step-by-step guide to building a Polymarket trade tracker with HyperSync
 
 ## Documentation
 
