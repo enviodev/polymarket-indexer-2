@@ -1,8 +1,8 @@
-import type { HandlerContext } from "generated";
+import type { EvmOnEventContext } from "envio";
 
 export async function getCollateralScale(
   collateralTokenId: string,
-  context: HandlerContext,
+  context: EvmOnEventContext,
 ): Promise<bigint> {
   const collateral = await context.Collateral.get(collateralTokenId);
 

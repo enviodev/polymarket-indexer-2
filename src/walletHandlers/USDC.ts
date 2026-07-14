@@ -1,6 +1,8 @@
-import { USDC } from "generated";
+import { indexer } from "envio";
 
-USDC.Transfer.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "USDC", event: "Transfer" },
+  async ({ event, context }) => {
   /// TODO: understand the use of GlobalUSDCBalance entity used in polymarket subgraph
 
   // 'to' address balance update
@@ -28,4 +30,5 @@ USDC.Transfer.handler(async ({ event, context }) => {
 
     context.Wallet.set(fromAddress);
   }
-});
+}
+);

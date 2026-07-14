@@ -1,8 +1,9 @@
-import { indexer } from "generated";
-import { FeeModule } from "generated";
+import { indexer } from "envio";
 import { getEventId } from "../common/utils/getEventId";
 
-FeeModule.FeeRefunded.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "FeeModule", event: "FeeRefunded" },
+  async ({ event, context }) => {
   const { id, to, orderHash, refund, feeCharged } = event.params;
 
   let negRisk = false;
@@ -20,4 +21,5 @@ FeeModule.FeeRefunded.handler(async ({ event, context }) => {
     feeCharged: feeCharged,
     negRisk: negRisk,
   });
-});
+}
+);

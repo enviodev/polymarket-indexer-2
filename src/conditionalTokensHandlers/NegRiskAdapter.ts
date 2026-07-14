@@ -1,4 +1,4 @@
-import { NegRiskAdapter, indexer } from "generated";
+import { indexer } from "envio";
 import {
   computeNegRiskYesPrice,
   getNegRiskConditionId,
@@ -18,7 +18,9 @@ import { COLLATERAL_SCALE, FIFTY_CENTS } from "./constants";
  * @dev following event handlers combined logic from both activity and oi subgraphs for NegRiskAdapter
  */
 
-NegRiskAdapter.PositionSplit.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "NegRiskAdapter", event: "PositionSplit" },
+  async ({ event, context }) => {
   const { amount, conditionId, stakeholder } = event.params;
   let isInternalSplit = true;
   let conditionFound = true;
@@ -71,9 +73,12 @@ NegRiskAdapter.PositionSplit.handler(async ({ event, context }) => {
       );
     }
   }
-});
+}
+);
 
-NegRiskAdapter.PositionsMerge.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "NegRiskAdapter", event: "PositionsMerge" },
+  async ({ event, context }) => {
   const { amount, conditionId, stakeholder } = event.params;
 
   let conditionExists = true;
@@ -125,9 +130,12 @@ NegRiskAdapter.PositionsMerge.handler(async ({ event, context }) => {
       );
     }
   }
-});
+}
+);
 
-NegRiskAdapter.PayoutRedemption.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "NegRiskAdapter", event: "PayoutRedemption" },
+  async ({ event, context }) => {
   const { payout, conditionId, redeemer } = event.params;
 
   // https://github.com/Polymarket/polymarket-subgraph/blob/7a92ba026a9466c07381e0d245a323ba23ee8701/activity-subgraph/src/NegRiskAdapterMapping.ts#L74C1-L81C1
@@ -194,22 +202,28 @@ NegRiskAdapter.PayoutRedemption.handler(async ({ event, context }) => {
       amount
     );
   }
-});
+}
+);
 
 // activity subgraph permalink: https://github.com/Polymarket/polymarket-subgraph/blob/7a92ba026a9466c07381e0d245a323ba23ee8701/activity-subgraph/src/NegRiskAdapterMapping.ts#L83-L87
 // oi-subgraph permalink: https://github.com/Polymarket/polymarket-subgraph/blob/7a92ba026a9466c07381e0d245a323ba23ee8701/oi-subgraph/src/NegRiskAdapterMapping.ts#L125C1-L130C2
-NegRiskAdapter.MarketPrepared.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "NegRiskAdapter", event: "MarketPrepared" },
+  async ({ event, context }) => {
   context.NegRiskEvent.set({
     id: event.params.marketId,
     questionCount: 0,
     feeBps: event.params.feeBips,
   });
-});
+}
+);
 
 // activity subgraph permalink: https://github.com/Polymarket/polymarket-subgraph/blob/7a92ba026a9466c07381e0d245a323ba23ee8701/activity-subgraph/src/NegRiskAdapterMapping.ts#L89-L98
 // oi-subgraph permalink: https://github.com/Polymarket/polymarket-subgraph/blob/7a92ba026a9466c07381e0d245a323ba23ee8701/oi-subgraph/src/NegRiskAdapterMapping.ts#L132C1-L140C2
 // pnl subgraph permalink: https://github.com/Polymarket/polymarket-subgraph/blob/main/pnl-subgraph/src/NegRiskAdapterMapping.ts#L222-L230
-NegRiskAdapter.QuestionPrepared.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "NegRiskAdapter", event: "QuestionPrepared" },
+  async ({ event, context }) => {
   const negRiskEvent = await context.NegRiskEvent.get(event.params.marketId);
   if (!negRiskEvent) return;
 
@@ -217,9 +231,12 @@ NegRiskAdapter.QuestionPrepared.handler(async ({ event, context }) => {
     ...negRiskEvent,
     questionCount: negRiskEvent.questionCount + 1,
   });
-});
+}
+);
 
-NegRiskAdapter.PositionsConverted.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "NegRiskAdapter", event: "PositionsConverted" },
+  async ({ event, context }) => {
   const { marketId, indexSet, amount, stakeholder } = event.params;
 
   const negRiskEvent = await context.NegRiskEvent.get(marketId);
@@ -356,4 +373,5 @@ NegRiskAdapter.PositionsConverted.handler(async ({ event, context }) => {
       );
     }
   }
-});
+}
+);

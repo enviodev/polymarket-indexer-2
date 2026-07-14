@@ -1,4 +1,4 @@
-import { indexer } from "generated";
+import { indexer } from "envio";
 import { computePositionId } from "./ctf-util";
 
 const NEG_RISK_WRAPPED_COLLATERAL: `0x${string}` =

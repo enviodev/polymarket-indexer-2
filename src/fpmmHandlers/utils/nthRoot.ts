@@ -1,6 +1,6 @@
-import type { HandlerContext } from "generated";
+import type { EvmOnEventContext } from "envio";
 
-export function nthRoot(x: bigint, n: number, context: HandlerContext): bigint {
+export function nthRoot(x: bigint, n: number, context: EvmOnEventContext): bigint {
   if (n <= 0) {
     context.log.error(`invalid n ${n} passed to nthRoot`);
   }

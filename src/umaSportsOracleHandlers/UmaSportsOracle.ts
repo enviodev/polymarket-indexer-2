@@ -1,6 +1,6 @@
-import { UmaSportsOracle } from "generated";
-import type { handlerContext, Market } from "generated";
-import type { Game_t } from "generated/src/db/Entities.gen";
+import { indexer } from "envio";
+import type { handlerContext, Market } from "envio";
+import type { Game_t } from "envio";
 import type { MarketType_t } from "generated/src/db/Enums.gen";
 
 // Helper: fetch existing game, log and return null if missing.
@@ -19,7 +19,9 @@ async function getAndSetGame(
   context.Game.set(updated);
 }
 
-UmaSportsOracle.GameCreated.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "UmaSportsOracle", event: "GameCreated" },
+  async ({ event, context }) => {
   const { gameId, ancillaryData, ordering } = event.params;
   const existing = await context.Game.get(gameId);
   if (existing) {
@@ -39,9 +41,12 @@ UmaSportsOracle.GameCreated.handler(async ({ event, context }) => {
   };
 
   context.Game.set(game);
-});
+}
+);
 
-UmaSportsOracle.GameSettled.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "UmaSportsOracle", event: "GameSettled" },
+  async ({ event, context }) => {
   const { away, gameId, home } = event.params;
   await getAndSetGame(
     gameId,
@@ -54,9 +59,12 @@ UmaSportsOracle.GameSettled.handler(async ({ event, context }) => {
     }),
     `GameSettled event received, but game ${gameId} does not exist. Skipping.`
   );
-});
+}
+);
 
-UmaSportsOracle.GameCanceled.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "UmaSportsOracle", event: "GameCanceled" },
+  async ({ event, context }) => {
   const { gameId } = event.params;
   await getAndSetGame(
     gameId,
@@ -64,9 +72,12 @@ UmaSportsOracle.GameCanceled.handler(async ({ event, context }) => {
     (g) => ({ ...g, state: "Canceled" }),
     `GameCanceled event received, but game ${gameId} does not exist. Skipping.`
   );
-});
+}
+);
 
-UmaSportsOracle.GamePaused.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "UmaSportsOracle", event: "GamePaused" },
+  async ({ event, context }) => {
   const { gameId } = event.params;
   await getAndSetGame(
     gameId,
@@ -74,9 +85,12 @@ UmaSportsOracle.GamePaused.handler(async ({ event, context }) => {
     (g) => ({ ...g, state: "Paused" }),
     `GamePaused event received, but game ${gameId} does not exist. Skipping.`
   );
-});
+}
+);
 
-UmaSportsOracle.GameEmergencySettled.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "UmaSportsOracle", event: "GameEmergencySettled" },
+  async ({ event, context }) => {
   const { away, gameId, home } = event.params;
   await getAndSetGame(
     gameId,
@@ -89,9 +103,12 @@ UmaSportsOracle.GameEmergencySettled.handler(async ({ event, context }) => {
     }),
     `GameEmergencySettled event received, but game ${gameId} does not exist. Skipping.`
   );
-});
+}
+);
 
-UmaSportsOracle.GameUnpaused.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "UmaSportsOracle", event: "GameUnpaused" },
+  async ({ event, context }) => {
   const { gameId } = event.params;
   await getAndSetGame(
     gameId,
@@ -99,7 +116,8 @@ UmaSportsOracle.GameUnpaused.handler(async ({ event, context }) => {
     (g) => ({ ...g, state: "Created" }),
     `GameUnpaused event received, but game ${gameId} does not exist. Skipping.`
   );
-});
+}
+);
 
 // Market Related Handlers
 function getMarketType(marketTypeId: number): MarketType_t {
@@ -112,7 +130,9 @@ function getMarketType(marketTypeId: number): MarketType_t {
   }
 }
 
-UmaSportsOracle.MarketCreated.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "UmaSportsOracle", event: "MarketCreated" },
+  async ({ event, context }) => {
   const { gameId, marketId, marketType, underdog, line } = event.params;
 
   const market = await context.Market.get(marketId);
@@ -132,7 +152,8 @@ UmaSportsOracle.MarketCreated.handler(async ({ event, context }) => {
     payouts: [],
   };
   context.Market.set(newMarket);
-});
+}
+);
 
 async function getAndSetMarket(
   marketId: string,
@@ -149,7 +170,9 @@ async function getAndSetMarket(
   context.Market.set(updated);
 }
 
-UmaSportsOracle.MarketResolved.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "UmaSportsOracle", event: "MarketResolved" },
+  async ({ event, context }) => {
   const { marketId, payouts } = event.params;
 
   await getAndSetMarket(
@@ -162,8 +185,11 @@ UmaSportsOracle.MarketResolved.handler(async ({ event, context }) => {
     }),
     `MarketResolved event received, but market ${marketId} does not exist. Skipping.`
   );
-});
-UmaSportsOracle.MarketEmergencyResolved.handler(async ({ event, context }) => {
+}
+);
+indexer.onEvent(
+  { contract: "UmaSportsOracle", event: "MarketEmergencyResolved" },
+  async ({ event, context }) => {
   const { marketId, payouts } = event.params;
   await getAndSetMarket(
     marketId,
@@ -175,8 +201,11 @@ UmaSportsOracle.MarketEmergencyResolved.handler(async ({ event, context }) => {
     }),
     `MarketEmergencyResolved event received, but market ${marketId} does not exist. Skipping.`
   );
-});
-UmaSportsOracle.MarketPaused.handler(async ({ event, context }) => {
+}
+);
+indexer.onEvent(
+  { contract: "UmaSportsOracle", event: "MarketPaused" },
+  async ({ event, context }) => {
   const { marketId } = event.params;
   await getAndSetMarket(
     marketId,
@@ -184,9 +213,12 @@ UmaSportsOracle.MarketPaused.handler(async ({ event, context }) => {
     (m) => ({ ...m, state: "Paused" }),
     `MarketPaused event received, but market ${marketId} does not exist. Skipping.`
   );
-});
+}
+);
 
-UmaSportsOracle.MarketUnpaused.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "UmaSportsOracle", event: "MarketUnpaused" },
+  async ({ event, context }) => {
   const { marketId } = event.params;
   await getAndSetMarket(
     marketId,
@@ -194,4 +226,5 @@ UmaSportsOracle.MarketUnpaused.handler(async ({ event, context }) => {
     (m) => ({ ...m, state: "Created" }),
     `MarketUnpaused event received, but market ${marketId} does not exist. Skipping.`
   );
-});
+}
+);

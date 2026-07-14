@@ -1,8 +1,8 @@
-import { BigDecimal, Exchange } from "generated";
+import { indexer, BigDecimal } from "envio";
 import type {
   Orderbook_t,
   OrderFilledEvent_t,
-} from "generated/src/db/Entities.gen";
+} from "envio";
 import { parseOrderFilled, type Order } from "../fpmmHandlers/utils/pnlUtils";
 import { COLLATERAL_SCALE } from "../conditionalTokensHandlers/constants";
 import {
@@ -14,7 +14,9 @@ const BIG_ZERO = 0n;
 const COLLATERAL_SCALE_DEC = new BigDecimal(10).pow(6);
 const ORDERS_MATCHED_GLOBAL_ID = "OrdersMatchedGlobal";
 
-Exchange.OrderFilled.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "Exchange", event: "OrderFilled" },
+  async ({ event, context }) => {
   BigDecimal;
   const {
     fee,
@@ -125,7 +127,8 @@ Exchange.OrderFilled.handler(async ({ event, context }) => {
       order.baseAmount,
     );
   }
-});
+}
+);
 
 function getOrderSide(makerAssetId: bigint): "Buy" | "Sell" {
   return makerAssetId === BIG_ZERO ? "Buy" : "Sell";
@@ -139,7 +142,9 @@ function getOrderSize(
   return side === "Buy" ? makerAmountFilled : takerAmountFilled;
 }
 
-Exchange.OrdersMatched.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "Exchange", event: "OrdersMatched" },
+  async ({ event, context }) => {
   // NOTE: maker/taker amounts are intentionally flipped
   const makerAmountFilled = event.params.takerAmountFilled;
   const takerAmountFilled = event.params.makerAmountFilled;
@@ -216,15 +221,19 @@ Exchange.OrdersMatched.handler(async ({ event, context }) => {
   };
 
   context.OrdersMatchedGlobal.set(updatedGlobal);
-});
+}
+);
 
-Exchange.TokenRegistered.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "Exchange", event: "TokenRegistered" },
+  async ({ event, context }) => {
   const { token0, token1, conditionId } = event.params;
 
   await ensureMarketData(context, token0.toString(), conditionId, undefined);
 
   await ensureMarketData(context, token1.toString(), conditionId, 1n);
-});
+}
+);
 
 // -----------------------------
 // Helpers

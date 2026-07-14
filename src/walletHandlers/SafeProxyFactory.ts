@@ -1,7 +1,9 @@
-import { SafeProxyFactory } from "generated";
-import type { Wallet_t } from "generated/src/db/Entities.gen";
+import { indexer } from "envio";
+import type { Wallet_t } from "envio";
 
-SafeProxyFactory.ProxyCreation.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "SafeProxyFactory", event: "ProxyCreation" },
+  async ({ event, context }) => {
   const wallet = await context.Wallet.get(event.params.proxy);
 
   if (!wallet) {
@@ -16,4 +18,5 @@ SafeProxyFactory.ProxyCreation.handler(async ({ event, context }) => {
     };
     context.Wallet.set(newWallet);
   }
-});
+}
+);

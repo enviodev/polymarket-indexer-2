@@ -1,5 +1,5 @@
-import { BigDecimal, FixedProductMarketMaker } from "generated";
 
+import { indexer, BigDecimal, type FixedProductMarketMaker } from "envio";
 import { increment, max } from "./utils/maths";
 import {
   updateFeeFields,
@@ -10,16 +10,18 @@ import { getEventId } from "../common/utils/getEventId";
 import { getCollateralScale } from "./utils/collateralToken";
 import { calculatePrices } from "./utils/calculatePrices";
 import { nthRoot } from "./utils/nthRoot";
-import type { FpmmFundingAddition_t } from "generated/src/db/Entities.gen";
+import type { FpmmFundingAddition } from "envio";
 import { COLLATERAL_SCALE } from "../conditionalTokensHandlers/constants";
 import {
   updateUserPositionWithBuy,
   updateUserPositionWithSell,
 } from "../conditionalTokensHandlers/utils";
 import { computeFpmmPrice, parseFundingAddedSendBack } from "./utils/pnlUtils";
-import type { Entities } from "generated/envio";
+import type { Entities } from "envio";
 
-FixedProductMarketMaker.FPMMBuy.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "FixedProductMarketMaker", event: "FPMMBuy" },
+  async ({ event, context }) => {
   let fpmmAddress = event.srcAddress;
   let fpmm = await context.FixedProductMarketMaker.get(fpmmAddress);
   if (!fpmm) {
@@ -29,14 +31,14 @@ FixedProductMarketMaker.FPMMBuy.handler(async ({ event, context }) => {
     return;
   }
 
-  // let fpmm: DeepMutable<Entities["FixedProductMarketMaker"]> = {
+  // let fpmm: DeepMutable<Entity<"FixedProductMarketMaker">> = {
   //   ...entity,
   //   conditions: [...entity.conditions],
   //   outcomeTokenAmounts: [...entity.outcomeTokenAmounts],
   //   outcomeTokenPrices: [...entity.outcomeTokenPrices],
   // };
 
-  let oldAmounts = fpmm.outcomeTokenAmounts;
+  let oldAmounts = fpmm!.outcomeTokenAmounts;
   let investmentAmountMinusFees =
     event.params.investmentAmount - event.params.feeAmount;
   const outcomeIndex = Number(event.params.outcomeIndex);
@@ -66,7 +68,7 @@ FixedProductMarketMaker.FPMMBuy.handler(async ({ event, context }) => {
   };
 
   let liquidityParameter = nthRoot(amountsProduct, oldAmounts.length, context);
-  let collateralScale = getCollateralScale(fpmm.collateralToken_id, context);
+  let collateralScale = getCollateralScale(fpmm!.collateralToken_id, context);
   let collateralScaleDec = BigDecimal(collateralScale.toString());
 
   fpmm = updateLiquidityFields(fpmm, liquidityParameter, collateralScaleDec);
@@ -83,8 +85,8 @@ FixedProductMarketMaker.FPMMBuy.handler(async ({ event, context }) => {
 
   fpmm = {
     ...fpmm,
-    tradesQuantity: increment(fpmm.tradesQuantity),
-    buysQuantity: increment(fpmm.buysQuantity),
+    tradesQuantity: increment(fpmm!.tradesQuantity),
+    buysQuantity: increment(fpmm!.buysQuantity),
   };
 
   context.FixedProductMarketMaker.set(fpmm);
@@ -112,7 +114,7 @@ FixedProductMarketMaker.FPMMBuy.handler(async ({ event, context }) => {
     return;
   }
 
-  const conditionId = fpmm.conditions[0];
+  const conditionId = fpmm!.conditions[0];
   if (!conditionId) {
     context.log.error(
       `No condition found for FPMM at address ${fpmmAddress} in tx ${event.transaction.hash}`,
@@ -146,9 +148,12 @@ FixedProductMarketMaker.FPMMBuy.handler(async ({ event, context }) => {
     price,
     event.params.outcomeTokensBought,
   );
-});
+}
+);
 
-FixedProductMarketMaker.FPMMSell.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "FixedProductMarketMaker", event: "FPMMSell" },
+  async ({ event, context }) => {
   let fpmmAddress = event.srcAddress;
   let fpmm = await context.FixedProductMarketMaker.get(fpmmAddress);
   if (!fpmm) {
@@ -158,7 +163,7 @@ FixedProductMarketMaker.FPMMSell.handler(async ({ event, context }) => {
     return;
   }
 
-  let oldAmounts = fpmm.outcomeTokenAmounts;
+  let oldAmounts = fpmm!.outcomeTokenAmounts;
   let returnAmountPlusFees = event.params.returnAmount + event.params.feeAmount;
 
   const outcomeIndex = Number(event.params.outcomeIndex);
@@ -187,7 +192,7 @@ FixedProductMarketMaker.FPMMSell.handler(async ({ event, context }) => {
   };
 
   let liquidityParameter = nthRoot(amountsProduct, oldAmounts.length, context);
-  let collateralScale = getCollateralScale(fpmm.collateralToken_id, context);
+  let collateralScale = getCollateralScale(fpmm!.collateralToken_id, context);
   let collateralScaleDec = BigDecimal(collateralScale.toString());
 
   fpmm = updateLiquidityFields(fpmm, liquidityParameter, collateralScaleDec);
@@ -203,8 +208,8 @@ FixedProductMarketMaker.FPMMSell.handler(async ({ event, context }) => {
 
   fpmm = {
     ...fpmm,
-    tradesQuantity: increment(fpmm.tradesQuantity),
-    sellsQuantity: increment(fpmm.sellsQuantity),
+    tradesQuantity: increment(fpmm!.tradesQuantity),
+    sellsQuantity: increment(fpmm!.sellsQuantity),
   };
 
   context.FixedProductMarketMaker.set(fpmm);
@@ -232,7 +237,7 @@ FixedProductMarketMaker.FPMMSell.handler(async ({ event, context }) => {
     return;
   }
 
-  const conditionId = fpmm.conditions[0];
+  const conditionId = fpmm!.conditions[0];
   if (!conditionId) {
     context.log.error(
       `No condition found for FPMM at address ${fpmmAddress} in tx ${event.transaction.hash}`,
@@ -266,9 +271,11 @@ FixedProductMarketMaker.FPMMSell.handler(async ({ event, context }) => {
     price,
     event.params.outcomeTokensSold,
   );
-});
+}
+);
 
-FixedProductMarketMaker.FPMMFundingRemoved.handler(
+indexer.onEvent(
+  { contract: "FixedProductMarketMaker", event: "FPMMFundingRemoved" },
   async ({ event, context }) => {
     let fpmmAddress = event.srcAddress;
     let fpmm = await context.FixedProductMarketMaker.get(fpmmAddress);
@@ -279,7 +286,7 @@ FixedProductMarketMaker.FPMMFundingRemoved.handler(
       return;
     }
 
-    let oldAmounts = fpmm.outcomeTokenAmounts;
+    let oldAmounts = fpmm!.outcomeTokenAmounts;
     let amountsRemoved = event.params.amountsRemoved;
     let newAmounts = new Array<bigint>(oldAmounts.length);
     let amountsProduct = BigInt(1);
@@ -308,17 +315,17 @@ FixedProductMarketMaker.FPMMFundingRemoved.handler(
       oldAmounts.length,
       context,
     );
-    let collateralScale = getCollateralScale(fpmm.collateralToken_id, context);
+    let collateralScale = getCollateralScale(fpmm!.collateralToken_id, context);
     let collateralScaleDec = BigDecimal(collateralScale.toString());
 
     fpmm = updateLiquidityFields(fpmm, liquidityParameter, collateralScaleDec);
 
     fpmm = {
       ...fpmm,
-      totalSupply: fpmm.totalSupply - event.params.sharesBurnt,
+      totalSupply: fpmm!.totalSupply - event.params.sharesBurnt,
     };
 
-    if (fpmm.totalSupply === BigInt(0)) {
+    if (fpmm!.totalSupply === BigInt(0)) {
       fpmm = {
         ...fpmm,
         outcomeTokenPrices: calculatePrices(newAmounts),
@@ -327,7 +334,7 @@ FixedProductMarketMaker.FPMMFundingRemoved.handler(
 
     fpmm = {
       ...fpmm,
-      liquidityRemoveQuantity: increment(fpmm.liquidityRemoveQuantity),
+      liquidityRemoveQuantity: increment(fpmm!.liquidityRemoveQuantity),
     };
 
     context.FixedProductMarketMaker.set(fpmm);
@@ -343,7 +350,7 @@ FixedProductMarketMaker.FPMMFundingRemoved.handler(
       sharesBurnt: event.params.sharesBurnt,
     });
 
-    const conditionId = fpmm.conditions[0];
+    const conditionId = fpmm!.conditions[0];
     if (!conditionId) {
       context.log.error(
         `No condition found for FPMM at address ${fpmmAddress} in tx ${event.transaction.hash}`,
@@ -410,10 +417,12 @@ FixedProductMarketMaker.FPMMFundingRemoved.handler(
       lpSalePrice,
       event.params.sharesBurnt,
     );
-  },
+  }
 );
 
-FixedProductMarketMaker.FPMMFundingAdded.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "FixedProductMarketMaker", event: "FPMMFundingAdded" },
+  async ({ event, context }) => {
   let fpmmAddress = event.srcAddress;
   let fpmm = await context.FixedProductMarketMaker.get(fpmmAddress);
   if (!fpmm) {
@@ -423,14 +432,14 @@ FixedProductMarketMaker.FPMMFundingAdded.handler(async ({ event, context }) => {
     return;
   }
 
-  // let fpmm: DeepMutable<Entities["FixedProductMarketMaker"]> = {
+  // let fpmm: DeepMutable<Entity<"FixedProductMarketMaker">> = {
   //   ...entity,
   //   conditions: [...entity.conditions],
   //   outcomeTokenAmounts: [...entity.outcomeTokenAmounts],
   //   outcomeTokenPrices: [...entity.outcomeTokenPrices],
   // };
 
-  let oldAmounts = fpmm.outcomeTokenAmounts;
+  let oldAmounts = fpmm!.outcomeTokenAmounts;
   let amountsAdded = event.params.amountsAdded;
   let newAmounts = new Array<bigint>(oldAmounts.length);
   let amountsProduct = BigInt(1);
@@ -454,16 +463,16 @@ FixedProductMarketMaker.FPMMFundingAdded.handler(async ({ event, context }) => {
   };
 
   let liquidityParameter = nthRoot(amountsProduct, oldAmounts.length, context);
-  let collateralScale = getCollateralScale(fpmm.collateralToken_id, context);
+  let collateralScale = getCollateralScale(fpmm!.collateralToken_id, context);
   let collateralScaleDec = BigDecimal(collateralScale.toString());
   fpmm = updateLiquidityFields(fpmm, liquidityParameter, collateralScaleDec);
 
   fpmm = {
     ...fpmm,
-    totalSupply: fpmm.totalSupply + event.params.sharesMinted,
+    totalSupply: fpmm!.totalSupply + event.params.sharesMinted,
   };
 
-  if (fpmm.totalSupply === event.params.sharesMinted) {
+  if (fpmm!.totalSupply === event.params.sharesMinted) {
     fpmm = {
       ...fpmm,
       outcomeTokenPrices: calculatePrices(newAmounts),
@@ -472,13 +481,13 @@ FixedProductMarketMaker.FPMMFundingAdded.handler(async ({ event, context }) => {
 
   fpmm = {
     ...fpmm,
-    liquidityAddQuantity: increment(fpmm.liquidityAddQuantity),
+    liquidityAddQuantity: increment(fpmm!.liquidityAddQuantity),
   };
 
   context.FixedProductMarketMaker.set(fpmm);
 
   // record funding added transaction
-  let fundingAdditionEntity: FpmmFundingAddition_t = {
+  let fundingAdditionEntity: FpmmFundingAddition = {
     id: event.transaction.hash,
     timestamp: event.block.timestamp,
     fpmm_id: event.srcAddress,
@@ -506,7 +515,7 @@ FixedProductMarketMaker.FPMMFundingAdded.handler(async ({ event, context }) => {
 
   // https://github.com/Polymarket/polymarket-subgraph/blob/main/pnl-subgraph/src/FixedProductMarketMakerMapping.ts#L111-L163
 
-  const conditionId = fpmm.conditions[0];
+  const conditionId = fpmm!.conditions[0];
   if (!conditionId) {
     context.log.error(
       `No condition found for FPMM at address ${fpmmAddress} in tx ${event.transaction.hash}`,
@@ -569,9 +578,12 @@ FixedProductMarketMaker.FPMMFundingAdded.handler(async ({ event, context }) => {
     lpShareprice,
     event.params.sharesMinted,
   );
-});
+}
+);
 
-FixedProductMarketMaker.Transfer.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "FixedProductMarketMaker", event: "Transfer" },
+  async ({ event, context }) => {
   let fpmmAddress = event.srcAddress;
   let fromAddress = event.params.from;
   let toAddress = event.params.to;
@@ -600,4 +612,5 @@ FixedProductMarketMaker.Transfer.handler(async ({ event, context }) => {
   } catch (error) {
     context.log.error(`Error updating FpmmPoolMembership: ${error}`);
   }
-});
+}
+);

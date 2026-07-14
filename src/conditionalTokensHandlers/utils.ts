@@ -1,13 +1,13 @@
-import type { HandlerContext } from "generated";
+import { indexer } from "envio";
+import type { EvmOnEventContext } from "envio";
 import { COLLATERAL_SCALE, GLOBAL_OPEN_INTEREST_ID } from "./constants";
 import { hexToBytes, bytesToHex, keccak256 } from "viem";
-import { indexer } from "generated";
 import { computePositionId } from "../common/utils/ctf-util";
 
 export async function updateMarketOpenInterest(
   amount: bigint,
   conditionId: string,
-  context: HandlerContext
+  context: EvmOnEventContext
 ) {
   let marketOpenInterest = await context.MarketOpenInterest.getOrCreate({
     id: conditionId,
@@ -24,7 +24,7 @@ export async function updateMarketOpenInterest(
 
 export async function updateGlobalOpenInterest(
   amount: bigint,
-  context: HandlerContext
+  context: EvmOnEventContext
 ) {
   let globalOpenInterest = await context.GlobalOpenInterest.getOrCreate({
     id: GLOBAL_OPEN_INTEREST_ID,
@@ -42,7 +42,7 @@ export async function updateGlobalOpenInterest(
 export async function updateOpenInterest(
   amount: bigint,
   conditionId: string,
-  context: HandlerContext
+  context: EvmOnEventContext
 ) {
   await Promise.all([
     updateGlobalOpenInterest(amount, context),
@@ -128,7 +128,7 @@ export function indexSetContains(
 }
 
 export async function getOrCreateUserPosition(
-  context: HandlerContext,
+  context: EvmOnEventContext,
   user: `0x${string}`,
   positionId: bigint
 ) {
@@ -144,7 +144,7 @@ export async function getOrCreateUserPosition(
 }
 
 export async function updateUserPositionWithBuy(
-  context: HandlerContext,
+  context: EvmOnEventContext,
   user: `0x${string}`,
   positionId: bigint,
   price: bigint,
@@ -167,7 +167,7 @@ export async function updateUserPositionWithBuy(
 }
 
 export async function updateUserPositionWithSell(
-  context: HandlerContext,
+  context: EvmOnEventContext,
   user: `0x${string}`,
   positionId: bigint,
   price: bigint,
@@ -189,7 +189,7 @@ export async function updateUserPositionWithSell(
 }
 
 export const getNegRiskPositionId = (
-  context: HandlerContext,
+  context: EvmOnEventContext,
   negRiskMarketId: `0x${string}`,
   questionIndex: number,
   outcomeIndex: number

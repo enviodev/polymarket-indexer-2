@@ -1,8 +1,9 @@
-import { BigDecimal, FixedProductMarketMakerFactory } from "generated";
-import type { FixedProductMarketMaker_t } from "generated/src/db/Entities.gen";
+import { indexer, BigDecimal } from "envio";
+import type { FixedProductMarketMaker } from "envio";
 import { getCollateralDetails } from "./collateralEffect";
 
-FixedProductMarketMakerFactory.FixedProductMarketMakerCreation.handler(
+indexer.onEvent(
+  { contract: "FixedProductMarketMakerFactory", event: "FixedProductMarketMakerCreation" },
   async ({ event, context }) => {
     const {
       fixedProductMarketMaker,
@@ -24,7 +25,7 @@ FixedProductMarketMakerFactory.FixedProductMarketMakerCreation.handler(
       return;
     }
 
-    let entity: FixedProductMarketMaker_t = {
+    let entity: FixedProductMarketMaker = {
       id: "",
       creator: "",
       creationTimestamp: 0,
@@ -117,13 +118,14 @@ FixedProductMarketMakerFactory.FixedProductMarketMakerCreation.handler(
     };
 
     context.FixedProductMarketMaker.set(entity);
-  },
+  }
 );
 
-FixedProductMarketMakerFactory.FixedProductMarketMakerCreation.contractRegister(
-  ({ event, context }) => {
-    context.addFixedProductMarketMaker(event.params.fixedProductMarketMaker);
-  },
+indexer.contractRegister(
+  { contract: "FixedProductMarketMakerFactory", event: "FixedProductMarketMakerCreation" },
+  async ({ event, context }) => {
+    context.chain.FixedProductMarketMaker.add(event.params.fixedProductMarketMaker);
+  }
 );
 
 type TokenDetails = {

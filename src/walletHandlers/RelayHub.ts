@@ -1,12 +1,14 @@
-import { RelayHub } from "generated";
+import { indexer } from "envio";
 import {
   PROXY_WALLET_FACTORY,
   PROXY_WALLET_IMPLEMENTATION,
 } from "../common/constants";
 import { computeProxyWalletAddress } from "../common/utils/computeProxyWalletAddress";
-import type { Wallet_t } from "generated/src/db/Entities.gen";
+import type { Wallet_t } from "envio";
 
-RelayHub.TransactionRelayed.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "RelayHub", event: "TransactionRelayed" },
+  async ({ event, context }) => {
   if (event.params.to == PROXY_WALLET_FACTORY.toLowerCase()) {
     return;
   }
@@ -31,4 +33,5 @@ RelayHub.TransactionRelayed.handler(async ({ event, context }) => {
     };
     context.Wallet.set(newWallet);
   }
-});
+}
+);

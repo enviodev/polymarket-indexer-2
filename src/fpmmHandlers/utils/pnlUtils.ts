@@ -1,9 +1,6 @@
 import type { TradeType_t } from "generated/src/db/Enums.gen";
 import { COLLATERAL_SCALE } from "../../conditionalTokensHandlers/constants";
-import type {
-  Exchange_OrderFilled_event,
-  FixedProductMarketMaker_FPMMFundingAdded_event,
-} from "generated";
+import type { Exchange_OrderFilled_event, FixedProductMarketMaker_FPMMFundingAdded_event } from "envio";
 
 export const computeFpmmPrice = (
   amounts: readonly [bigint, bigint],

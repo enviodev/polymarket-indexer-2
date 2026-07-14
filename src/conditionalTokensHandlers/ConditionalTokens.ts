@@ -1,16 +1,17 @@
-import { ConditionalTokens, type HandlerContext } from "generated";
+import { indexer } from "envio";
 import {
   getOrCreateUserPosition,
   updateOpenInterest,
   updateUserPositionWithBuy,
   updateUserPositionWithSell,
 } from "./utils";
-import { indexer } from "generated";
 import { getEventId } from "../common/utils/getEventId";
 import { getPositionId } from "../common/utils/getPositionId";
 import { COLLATERAL_SCALE, FIFTY_CENTS } from "./constants";
 
-ConditionalTokens.PositionSplit.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "ConditionalTokens", event: "PositionSplit" },
+  async ({ event, context }) => {
   // check if condition exists if not skip it
   const { amount, collateralToken, conditionId } = event.params;
   const condition = await context.Condition.get(conditionId);
@@ -74,9 +75,12 @@ ConditionalTokens.PositionSplit.handler(async ({ event, context }) => {
     condition: conditionId,
     amount: event.params.amount,
   });
-});
+}
+);
 
-ConditionalTokens.PositionsMerge.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "ConditionalTokens", event: "PositionsMerge" },
+  async ({ event, context }) => {
   // check if condition exists if not skip it
   const { amount, collateralToken, conditionId } = event.params;
   const condition = await context.Condition.get(conditionId);
@@ -138,9 +142,12 @@ ConditionalTokens.PositionsMerge.handler(async ({ event, context }) => {
     condition: conditionId,
     amount: event.params.amount,
   });
-});
+}
+);
 
-ConditionalTokens.PayoutRedemption.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "ConditionalTokens", event: "PayoutRedemption" },
+  async ({ event, context }) => {
   // check if condition exists if not skip it
   const { payout, collateralToken, conditionId, redeemer } = event.params;
   const condition = await context.Condition.get(conditionId);
@@ -210,10 +217,13 @@ ConditionalTokens.PayoutRedemption.handler(async ({ event, context }) => {
     const price = (payoutNumerator * COLLATERAL_SCALE) / payoutDenominator;
     updateUserPositionWithSell(context, redeemer, positionId, price, amount);
   }
-});
+}
+);
 
 // Activity Subgraph: https://github.com/Polymarket/polymarket-subgraph/blob/7a92ba026a9466c07381e0d245a323ba23ee8701/activity-subgraph/src/ConditionalTokensMapping.ts#L124-L154
-ConditionalTokens.ConditionPreparation.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "ConditionalTokens", event: "ConditionPreparation" },
+  async ({ event, context }) => {
   const { outcomeSlotCount, conditionId } = event.params;
 
   if (outcomeSlotCount != 2n) {
@@ -257,10 +267,13 @@ ConditionalTokens.ConditionPreparation.handler(async ({ event, context }) => {
       });
     }
   }
-});
+}
+);
 
 // Only in PNL Subgraph: https://github.com/Polymarket/polymarket-subgraph/blob/main/pnl-subgraph/src/ConditionalTokensMapping.ts#L157-L172
-ConditionalTokens.ConditionResolution.handler(async ({ event, context }) => {
+indexer.onEvent(
+  { contract: "ConditionalTokens", event: "ConditionResolution" },
+  async ({ event, context }) => {
   const { conditionId, payoutNumerators } = event.params;
   const condition = await context.Condition.get(conditionId);
 
@@ -281,4 +294,5 @@ ConditionalTokens.ConditionResolution.handler(async ({ event, context }) => {
     payoutNumerators: payoutNumerators,
     payoutDenominator: payoutDenominator,
   });
-});
+}
+);

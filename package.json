@@ -9,7 +9,7 @@
     "codegen": "envio codegen",
     "dev": "envio dev",
     "start": "envio start",
-    "test": "vitest run"
+    "test": "vitest run --passWithNoTests"
   },
   "devDependencies": {
     "@types/chai": "^4.3.11",
@@ -22,11 +22,8 @@
     "vitest": "4.0.16"
   },
   "dependencies": {
-    "envio": "3.0.0-alpha.10",
+    "envio": "3.2.1",
     "viem": "^2.43.2"
-  },
-  "optionalDependencies": {
-    "generated": "./generated"
   },
   "type": "module",
   "engines": {

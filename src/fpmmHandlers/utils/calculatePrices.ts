@@ -1,4 +1,4 @@
-import { BigDecimal } from "generated";
+import { BigDecimal } from "envio";
 
 export function calculatePrices(amounts: bigint[]): BigDecimal[] {
   let outcomePrices = new Array<BigDecimal>(amounts.length);

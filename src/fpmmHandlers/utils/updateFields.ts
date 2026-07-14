@@ -1,17 +1,17 @@
-import { BigDecimal /*, TradeType*/ } from "generated";
-import type { FixedProductMarketMaker_t } from "generated/src/db/Entities.gen";
+import { BigDecimal } from "envio";
+import type { FixedProductMarketMaker } from "envio";
 import { timestampToDay } from "./time";
-import type { Entities } from "generated/envio";
+import type { Entities } from "envio";
 
 function updateVolumes(
-  fpmm: Entities["FixedProductMarketMaker"],
+  fpmm: Entity<"FixedProductMarketMaker">,
   timestamp: number,
   tradeSize: bigint,
   collateralScale: BigDecimal,
   tradeType: "Buy" | "Sell",
   // tradeType import from generated is not valid and that is throwing an error
   // but I can see in index files of generated folder that there is a named export for TradeType
-): Entities["FixedProductMarketMaker"] {
+): Entity<"FixedProductMarketMaker"> {
   fpmm = {
     ...fpmm,
     lastActiveDay:
@@ -57,10 +57,10 @@ function updateVolumes(
 }
 
 function updateFeeFields(
-  fpmm: Entities["FixedProductMarketMaker"],
+  fpmm: Entity<"FixedProductMarketMaker">,
   feeAmount: bigint,
   collateralScale: BigDecimal,
-): Entities["FixedProductMarketMaker"] {
+): Entity<"FixedProductMarketMaker"> {
   const newFeeVolume = fpmm.feeVolume + feeAmount;
 
   return {
@@ -71,10 +71,10 @@ function updateFeeFields(
 }
 
 function updateLiquidityFields(
-  fpmm: Entities["FixedProductMarketMaker"],
+  fpmm: Entity<"FixedProductMarketMaker">,
   liquidityParameter: bigint,
   collateralScale: BigDecimal,
-): Entities["FixedProductMarketMaker"] {
+): Entity<"FixedProductMarketMaker"> {
   return {
     ...fpmm,
     liquidityParameter: liquidityParameter,
